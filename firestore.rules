@@ -1,0 +1,139 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Default deny all unknown paths
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid)) ||
+        request.auth.token.email == '1raj1thakur11@gmail.com'
+      );
+    }
+
+    function isValidUpdate(data) {
+      return data.keys().hasAll(['title', 'description', 'category', 'createdAt']) &&
+        data.title is string && data.title.size() <= 200 &&
+        data.description is string && data.description.size() <= 5000 &&
+        data.category in ['announcement', 'youtube', 'shorts', 'gaming', 'personal', 'news', 'projects'] &&
+        data.createdAt is string && data.createdAt.size() <= 50 &&
+        (!('imageUrl' in data) || (data.imageUrl is string && data.imageUrl.size() <= 500000)) &&
+        (!('videoUrl' in data) || (data.videoUrl is string && data.videoUrl.size() <= 1000)) &&
+        (!('badgeText' in data) || (data.badgeText is string && data.badgeText.size() <= 50)) &&
+        (!('isFeatured' in data) || data.isFeatured is bool) &&
+        (!('authorName' in data) || (data.authorName is string && data.authorName.size() <= 100)) &&
+        (!('updatedAt' in data) || (data.updatedAt is string && data.updatedAt.size() <= 50));
+    }
+
+    function isValidSocial(data) {
+      return data.keys().hasAll(['platform', 'accountName', 'profileUrl']) &&
+        data.platform is string && data.platform.size() <= 50 &&
+        data.accountName is string && data.accountName.size() <= 100 &&
+        data.profileUrl is string && data.profileUrl.size() <= 1000 &&
+        (!('icon' in data) || (data.icon is string && data.icon.size() <= 50)) &&
+        (!('followerCount' in data) || (data.followerCount is string && data.followerCount.size() <= 50)) &&
+        (!('description' in data) || (data.description is string && data.description.size() <= 300)) &&
+        (!('order' in data) || data.order is number) &&
+        (!('isActive' in data) || data.isActive is bool);
+    }
+
+    function isValidGaming(data) {
+      return data.keys().hasAll(['title', 'game']) &&
+        data.title is string && data.title.size() <= 200 &&
+        data.game is string && data.game.size() <= 100 &&
+        (!('tag' in data) || (data.tag is string && data.tag.size() <= 50)) &&
+        (!('description' in data) || (data.description is string && data.description.size() <= 2000)) &&
+        (!('videoUrl' in data) || (data.videoUrl is string && data.videoUrl.size() <= 1000)) &&
+        (!('thumbnailUrl' in data) || (data.thumbnailUrl is string && data.thumbnailUrl.size() <= 500000)) &&
+        (!('tips' in data) || (data.tips is string && data.tips.size() <= 2000)) &&
+        (!('rank' in data) || (data.rank is string && data.rank.size() <= 100)) &&
+        (!('createdAt' in data) || (data.createdAt is string && data.createdAt.size() <= 50));
+    }
+
+    function isValidConfig(data) {
+      return data.keys().hasAll(['appName', 'creatorName']) &&
+        data.appName is string && data.appName.size() <= 100 &&
+        data.creatorName is string && data.creatorName.size() <= 100 &&
+        (!('tagline' in data) || (data.tagline is string && data.tagline.size() <= 200)) &&
+        (!('creatorBio' in data) || (data.creatorBio is string && data.creatorBio.size() <= 5000)) &&
+        (!('avatarUrl' in data) || (data.avatarUrl is string && data.avatarUrl.size() <= 500000)) &&
+        (!('bannerUrl' in data) || (data.bannerUrl is string && data.bannerUrl.size() <= 500000)) &&
+        (!('logoUrl' in data) || (data.logoUrl is string && data.logoUrl.size() <= 500000)) &&
+        (!('announcementBanner' in data) || (data.announcementBanner is string && data.announcementBanner.size() <= 500)) &&
+        (!('announcementActive' in data) || data.announcementActive is bool) &&
+        (!('totalSubscribers' in data) || (data.totalSubscribers is string && data.totalSubscribers.size() <= 50)) &&
+        (!('totalViews' in data) || (data.totalViews is string && data.totalViews.size() <= 50)) &&
+        (!('discordUrl' in data) || (data.discordUrl is string && data.discordUrl.size() <= 1000)) &&
+        (!('updatedAt' in data) || (data.updatedAt is string && data.updatedAt.size() <= 50));
+    }
+
+    // Public Creator Updates
+    match /updates/{updateId} {
+      allow read: if true;
+      allow create: if isValidId(updateId) && isAdmin() && isValidUpdate(incoming());
+      allow update: if isValidId(updateId) && isAdmin() && isValidUpdate(incoming());
+      allow delete: if isValidId(updateId) && isAdmin();
+    }
+
+    // Public Social Media Links
+    match /socials/{socialId} {
+      allow read: if true;
+      allow create: if isValidId(socialId) && isAdmin() && isValidSocial(incoming());
+      allow update: if isValidId(socialId) && isAdmin() && isValidSocial(incoming());
+      allow delete: if isValidId(socialId) && isAdmin();
+    }
+
+    // Public Gaming Section (Free Fire MAX, tips, highlights)
+    match /gaming/{contentId} {
+      allow read: if true;
+      allow create: if isValidId(contentId) && isAdmin() && isValidGaming(incoming());
+      allow update: if isValidId(contentId) && isAdmin() && isValidGaming(incoming());
+      allow delete: if isValidId(contentId) && isAdmin();
+    }
+
+    // App Configuration & Creator Info
+    match /config/{configId} {
+      allow read: if true;
+      allow create: if isValidId(configId) && isAdmin() && isValidConfig(incoming());
+      allow update: if isValidId(configId) && isAdmin() && isValidConfig(incoming());
+      allow delete: if isValidId(configId) && isAdmin();
+    }
+
+    // Users and Fan accounts
+    match /users/{userId} {
+      allow get: if isOwner(userId) || isAdmin();
+      allow list: if isAdmin();
+      allow create, update: if isValidId(userId) && isOwner(userId);
+      allow delete: if isAdmin();
+    }
+
+    // Admins registry
+    match /admins/{adminUid} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "name": "NOVOX – Official App | Raj Thakur",
+  "description": "Official creator platform for NovoX Esports & Raj Thakur. Announcements, YouTube videos, Free Fire gaming updates, social media links, and creator feed.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

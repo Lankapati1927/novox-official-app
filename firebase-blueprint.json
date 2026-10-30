@@ -1,0 +1,115 @@
+{
+  "entities": {
+    "Update": {
+      "title": "Update",
+      "description": "An announcement, video link, news, gaming update or post published by Raj Thakur",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string", "maxLength": 200 },
+        "description": { "type": "string", "maxLength": 5000 },
+        "category": { "type": "string", "enum": ["announcement", "youtube", "shorts", "gaming", "personal", "news", "projects"] },
+        "imageUrl": { "type": "string", "maxLength": 500000 },
+        "videoUrl": { "type": "string", "maxLength": 1000 },
+        "badgeText": { "type": "string", "maxLength": 50 },
+        "isFeatured": { "type": "boolean" },
+        "authorName": { "type": "string", "maxLength": 100 },
+        "createdAt": { "type": "string", "maxLength": 50 },
+        "updatedAt": { "type": "string", "maxLength": 50 }
+      },
+      "required": ["title", "description", "category", "createdAt"]
+    },
+    "SocialLink": {
+      "title": "SocialLink",
+      "description": "Social media profile links for NovoX Esports and Raj Thakur",
+      "type": "object",
+      "properties": {
+        "platform": { "type": "string", "maxLength": 50 },
+        "accountName": { "type": "string", "maxLength": 100 },
+        "profileUrl": { "type": "string", "maxLength": 1000 },
+        "icon": { "type": "string", "maxLength": 50 },
+        "followerCount": { "type": "string", "maxLength": 50 },
+        "description": { "type": "string", "maxLength": 300 },
+        "order": { "type": "number" },
+        "isActive": { "type": "boolean" }
+      },
+      "required": ["platform", "accountName", "profileUrl"]
+    },
+    "GamingContent": {
+      "title": "GamingContent",
+      "description": "Gaming content cards for Free Fire MAX, Free Fire India, gameplay, headshot videos, rank push, tips & tricks",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string", "maxLength": 200 },
+        "game": { "type": "string", "maxLength": 100 },
+        "tag": { "type": "string", "maxLength": 50 },
+        "description": { "type": "string", "maxLength": 2000 },
+        "videoUrl": { "type": "string", "maxLength": 1000 },
+        "thumbnailUrl": { "type": "string", "maxLength": 500000 },
+        "tips": { "type": "string", "maxLength": 2000 },
+        "rank": { "type": "string", "maxLength": 100 },
+        "createdAt": { "type": "string", "maxLength": 50 }
+      },
+      "required": ["title", "game"]
+    },
+    "AppConfig": {
+      "title": "AppConfig",
+      "description": "App settings, creator profile (Raj Thakur), bio, banner, logo, and stats",
+      "type": "object",
+      "properties": {
+        "appName": { "type": "string", "maxLength": 100 },
+        "tagline": { "type": "string", "maxLength": 200 },
+        "creatorName": { "type": "string", "maxLength": 100 },
+        "creatorBio": { "type": "string", "maxLength": 5000 },
+        "avatarUrl": { "type": "string", "maxLength": 500000 },
+        "bannerUrl": { "type": "string", "maxLength": 500000 },
+        "logoUrl": { "type": "string", "maxLength": 500000 },
+        "announcementBanner": { "type": "string", "maxLength": 500 },
+        "announcementActive": { "type": "boolean" },
+        "totalSubscribers": { "type": "string", "maxLength": 50 },
+        "totalViews": { "type": "string", "maxLength": 50 },
+        "discordUrl": { "type": "string", "maxLength": 1000 },
+        "updatedAt": { "type": "string", "maxLength": 50 }
+      },
+      "required": ["appName", "creatorName"]
+    },
+    "AppUser": {
+      "title": "AppUser",
+      "description": "App fans and user profile",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string", "maxLength": 128 },
+        "email": { "type": "string", "maxLength": 254 },
+        "displayName": { "type": "string", "maxLength": 100 },
+        "joinedAt": { "type": "string", "maxLength": 50 },
+        "role": { "type": "string", "enum": ["admin", "fan"] }
+      },
+      "required": ["uid", "joinedAt"]
+    }
+  },
+  "firestore": {
+    "/updates/{updateId}": {
+      "schema": { "$ref": "#/entities/Update" },
+      "description": "All published creator updates, YouTube videos, and announcements"
+    },
+    "/socials/{socialId}": {
+      "schema": { "$ref": "#/entities/SocialLink" },
+      "description": "Social media links managed by admin"
+    },
+    "/gaming/{contentId}": {
+      "schema": { "$ref": "#/entities/GamingContent" },
+      "description": "Free Fire and gaming guides, streams, tips & tricks"
+    },
+    "/config/{configId}": {
+      "schema": { "$ref": "#/entities/AppConfig" },
+      "description": "Application settings, creator info, and banner"
+    },
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/AppUser" },
+      "description": "App users and fans"
+    },
+    "/admins/{adminUid}": {
+      "schema": { "$ref": "#/entities/AppUser" },
+      "description": "Document presence signifies admin privileges"
+    }
+  }
+}
